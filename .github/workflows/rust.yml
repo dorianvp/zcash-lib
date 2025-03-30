@@ -30,7 +30,5 @@ jobs:
         with:
           components: llvm-tools-preview
       - uses: taiki-e/install-action@cargo-llvm-cov
-      - name: Run tests
-        run: cargo nextest run --verbose --no-fail-fast
       - name: Collect coverage data
-        run: cargo llvm-cov nextest
+        run: cargo llvm-cov nextest --verbose --no-fail-fast

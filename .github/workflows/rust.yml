@@ -22,7 +22,7 @@ jobs:
       with:
         tool: nextest
     - name: Run tests
-      run: cargo nextest --verbose --no-fail-fast
+      run: cargo nextest run --verbose --no-fail-fast
     - uses: dtolnay/rust-toolchain@stable
       with:
         components: llvm-tools-preview

@@ -2,32 +2,34 @@ name: Rust
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build
-      run: cargo build --verbose
-    - uses: taiki-e/install-action@v2
-      with:
-        tool: nextest
-    - name: Run tests
-      run: cargo nextest run --verbose --no-fail-fast
-    - uses: dtolnay/rust-toolchain@stable
-      with:
-        components: llvm-tools-preview
-    - uses: taiki-e/install-action@cargo-llvm-cov
-    - uses: taiki-e/install-action@nextest
-    
-    - name: Collect coverage data
-      run: cargo llvm-cov nextest
+      - uses: actions/checkout@v4
+      - name: Build
+        run: cargo build --verbose
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: nextest
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - uses: taiki-e/install-action@cargo-llvm-cov
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run tests
+        run: cargo nextest run --verbose --no-fail-fast
+      - name: Collect coverage data
+        run: cargo llvm-cov nextest

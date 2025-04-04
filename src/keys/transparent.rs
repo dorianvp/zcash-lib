@@ -2,7 +2,10 @@ use k256::{
     ecdsa::{SigningKey, VerifyingKey},
     elliptic_curve::rand_core::{self},
 };
+use ripemd::Ripemd160;
 use sha2::{Digest, Sha256};
+
+use crate::{address::transparent::TransparentAddress, utils::double_sha256};
 
 const COMPRESSED_FLAG: u8 = 0x01;
 
@@ -48,7 +51,8 @@ impl PrivateKey {
 pub struct PublicKey(VerifyingKey);
 
 impl PublicKey {
-    pub fn to_address(&self, network: Network) -> String {
+    /// Converts a public key to a P2PKH address.
+    pub fn to_p2pkh_address(&self) -> TransparentAddress {
         use ripemd::Ripemd160;
         use sha2::Sha256;
 
@@ -58,30 +62,27 @@ impl PublicKey {
         let sha256 = Sha256::digest(pubkey_bytes);
         let ripemd160 = Ripemd160::digest(sha256);
 
-        let prefix = match network {
-            Network::Mainnet => 0x1CB8,
-            Network::Testnet => 0x1D25,
-            Network::Regtest => 0x1D25,
-        };
+        let mut hash = [0u8; 20];
+        hash.copy_from_slice(&ripemd160);
 
-        let mut address_bytes = vec![];
-        address_bytes.push((prefix >> 8) as u8);
-        address_bytes.push((prefix & 0xFF) as u8);
-        address_bytes.extend_from_slice(&ripemd160);
+        TransparentAddress::P2PKH(hash)
+    }
 
-        let checksum = double_sha256(&address_bytes)[..4].to_vec();
-        address_bytes.extend_from_slice(&checksum);
-
-        bs58::encode(address_bytes).into_string()
+    pub fn to_dummy_p2sh_address(&self) -> TransparentAddress {
+        let binding = self.0.to_encoded_point(true);
+        let script = binding.as_bytes(); // placeholder
+        to_p2sh_address_from_redeem_script(script)
     }
 }
 
-fn double_sha256(data: &[u8]) -> [u8; 32] {
-    let hash = Sha256::digest(data);
-    let hash2 = Sha256::digest(&hash);
-    let mut out = [0u8; 32];
-    out.copy_from_slice(&hash2);
-    out
+pub fn to_p2sh_address_from_redeem_script(script: &[u8]) -> TransparentAddress {
+    let sha256 = Sha256::digest(script);
+    let ripemd160 = Ripemd160::digest(sha256);
+
+    let mut hash = [0u8; 20];
+    hash.copy_from_slice(&ripemd160);
+
+    TransparentAddress::P2SH(hash)
 }
 
 #[cfg(test)]
@@ -92,6 +93,43 @@ mod tests {
     fn test_key_generation() {
         let key = PrivateKey::generate();
         assert_eq!(key.0.to_bytes().len(), 32);
+    }
+
+    #[test]
+    fn test_p2pkh_address_generation() {
+        let key = PrivateKey::generate();
+        let p2pkh_address_main = key
+            .public_key()
+            .to_p2pkh_address()
+            .to_base58check(Network::Mainnet);
+        let p2pkh_address_test = key
+            .public_key()
+            .to_p2pkh_address()
+            .to_base58check(Network::Testnet);
+
+        assert!(p2pkh_address_main.starts_with("t1"));
+        assert!(p2pkh_address_test.starts_with("tm"));
+        assert_eq!(p2pkh_address_main.len(), 35);
+        assert_eq!(p2pkh_address_test.len(), 35);
+    }
+
+    #[test]
+    fn test_p2sh_address_generation() {
+        let key = PrivateKey::generate();
+        let p2sh_address_main = key
+            .public_key()
+            .to_dummy_p2sh_address()
+            .to_base58check(Network::Mainnet);
+        let p2sh_address_test = key
+            .public_key()
+            .to_dummy_p2sh_address()
+            .to_base58check(Network::Testnet);
+
+        assert!(p2sh_address_main.starts_with("t3"));
+        assert!(p2sh_address_test.starts_with("t2"));
+
+        assert_eq!(p2sh_address_main.len(), 35);
+        assert_eq!(p2sh_address_test.len(), 35);
     }
 
     #[test]

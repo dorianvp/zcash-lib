@@ -1,4 +1,4 @@
-use crate::{keys::transparent::Network, utils::double_sha256};
+use crate::{network::Network, utils::double_sha256};
 
 #[derive(Debug, Clone)]
 pub enum TransparentAddress {

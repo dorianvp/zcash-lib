@@ -5,15 +5,9 @@ use k256::{
 use ripemd::Ripemd160;
 use sha2::{Digest, Sha256};
 
-use crate::{address::transparent::TransparentAddress, utils::double_sha256};
+use crate::{address::transparent::TransparentAddress, network::Network, utils::double_sha256};
 
 const COMPRESSED_FLAG: u8 = 0x01;
-
-pub enum Network {
-    Mainnet,
-    Testnet,
-    Regtest,
-}
 
 #[derive(Debug, Clone)]
 pub struct PrivateKey(SigningKey);

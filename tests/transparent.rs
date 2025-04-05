@@ -1,5 +1,5 @@
 mod integration {
-    use zcash_lib::keys::transparent::{Network, PrivateKey};
+    use zcash_lib::{keys::transparent::PrivateKey, network::Network};
 
     #[test]
     fn test_address_generation_mainnet() {

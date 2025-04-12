@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useRef, useState, useEffect, forwardRef, useMemo } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { EffectComposer } from "@react-three/postprocessing";
@@ -162,6 +163,7 @@ export const RetroEffect = forwardRef((_, ref) => {
 	const effect = useMemo(() => new RetroEffectImpl(), []);
 	return <primitive ref={ref} object={effect} dispose={null} />;
 });
+RetroEffect.displayName = "RetroEffect";
 
 interface WaveUniforms {
 	[key: string]: THREE.Uniform<any>;

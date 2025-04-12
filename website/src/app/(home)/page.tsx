@@ -5,7 +5,7 @@ import Link from "next/link";
 export default function HomePage() {
 	return (
 		<main className="flex flex-1 flex-col justify-center text-center">
-			<div className="relative border rounded-4xl overflow-hidden m-2 lg:w-1/3 w-2/3 h-[600px] self-center">
+			<div className="relative border rounded-4xl overflow-hidden m-2 lg:w-1/3 w-2/3 h-[400px] lg:h-[600px] self-center">
 				<ShineBorder
 					shineColor={["#ffae39", "#F4B728", "#ff8342"]}
 					borderWidth={2}
